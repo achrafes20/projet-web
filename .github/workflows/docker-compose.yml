@@ -14,7 +14,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        fetch-depth: 2
+        fetch-depth: 2  # Nécessaire pour git diff
 
     - name: Free up port 3306
       run: |
@@ -53,11 +53,29 @@ jobs:
     - name: Check for Dockerfile changes
       id: dockerfile-changes
       run: |
-        changed_files=$(git diff --name-only HEAD^ HEAD || echo "")
+        # Initialiser avec false par défaut
         echo "backend_changed=false" >> $GITHUB_OUTPUT
         echo "frontend_changed=false" >> $GITHUB_OUTPUT
-        [[ "$changed_files" =~ "backend/Dockerfile" ]] && echo "backend_changed=true" >> $GITHUB_OUTPUT
-        [[ "$changed_files" =~ "frontend/Dockerfile" ]] && echo "frontend_changed=true" >> $GITHUB_OUTPUT
+        
+        # Vérifier les changements seulement si c'est un push
+        if [ "${{ github.event_name }}" == "push" ]; then
+          changed_files=$(git diff --name-only HEAD^ HEAD 2>/dev/null || echo "")
+          
+          if [[ "$changed_files" == "" ]]; then
+            echo "No changes detected between HEAD^ and HEAD"
+          else
+            echo "Changed files: $changed_files"
+            if [[ "$changed_files" =~ "backend/Dockerfile" ]]; then
+              echo "Backend Dockerfile changed"
+              echo "backend_changed=true" >> $GITHUB_OUTPUT
+            fi
+            
+            if [[ "$changed_files" =~ "frontend/Dockerfile" ]]; then
+              echo "Frontend Dockerfile changed"
+              echo "frontend_changed=true" >> $GITHUB_OUTPUT
+            fi
+          fi
+        fi
 
     - name: Push Backend Image
       if: |
@@ -65,6 +83,7 @@ jobs:
         steps.verify-services.outputs.services_ready == 'true' &&
         steps.dockerfile-changes.outputs.backend_changed == 'true'
       run: |
+        echo "Pushing backend image..."
         docker tag $(docker compose images -q backend) ${{ secrets.DOCKER_HUB_USERNAME }}/gym-backend:latest
         docker push ${{ secrets.DOCKER_HUB_USERNAME }}/gym-backend:latest
 
@@ -74,6 +93,7 @@ jobs:
         steps.verify-services.outputs.services_ready == 'true' &&
         steps.dockerfile-changes.outputs.frontend_changed == 'true'
       run: |
+        echo "Pushing frontend image..."
         docker tag $(docker compose images -q frontend) ${{ secrets.DOCKER_HUB_USERNAME }}/gym-frontend:latest
         docker push ${{ secrets.DOCKER_HUB_USERNAME }}/gym-frontend:latest
 
@@ -133,7 +153,7 @@ jobs:
         username: ${{ secrets.FREEHOSTIA_FTP_USER }}
         password: ${{ secrets.FREEHOSTIA_FTP_PASSWORD }}
         local-dir: ./backend/
-        server-dir: ./gym-management.com/
+        server-dir: ./htdocs/
         exclude: |
           .git*
           .env.example

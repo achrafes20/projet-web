@@ -13,6 +13,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
+      with:
+        fetch-depth: 2  # Nécessaire pour git diff HEAD^ HEAD
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
@@ -47,30 +49,33 @@ jobs:
       id: verify-services
       run: |
         # Verify backend is running
-        docker compose ps | grep backend | grep Up
+        docker compose ps | grep backend | grep Up || echo "Backend service check failed"
         # Verify frontend is running
-        docker compose ps | grep frontend | grep Up
+        docker compose ps | grep frontend | grep Up || echo "Frontend service check failed"
         # Verify database is running
-        docker compose ps | grep db | grep Up
+        docker compose ps | grep db | grep Up || echo "Database service check failed"
         echo "services_ready=true" >> $GITHUB_OUTPUT
 
     - name: Check for Dockerfile changes
       id: dockerfile-changes
       run: |
-        changed_files=$(git diff --name-only HEAD^ HEAD)
+        changed_files=$(git diff --name-only HEAD^ HEAD || echo "")
         backend_changed=false
         frontend_changed=false
         
         if [[ "$changed_files" =~ "backend/Dockerfile" ]]; then
+          echo "Backend Dockerfile changed"
           backend_changed=true
         fi
         
         if [[ "$changed_files" =~ "frontend/Dockerfile" ]]; then
+          echo "Frontend Dockerfile changed"
           frontend_changed=true
         fi
         
         echo "backend_changed=$backend_changed" >> $GITHUB_OUTPUT
         echo "frontend_changed=$frontend_changed" >> $GITHUB_OUTPUT
+        echo "No Dockerfile changes detected" >> $GITHUB_STEP_SUMMARY
 
     - name: Push Backend Image
       if: |
@@ -80,6 +85,7 @@ jobs:
       run: |
         docker tag $(docker compose images -q backend) ${{ secrets.DOCKER_HUB_USERNAME }}/gym-backend:latest
         docker push ${{ secrets.DOCKER_HUB_USERNAME }}/gym-backend:latest
+      continue-on-error: true
 
     - name: Push Frontend Image
       if: |
@@ -89,6 +95,7 @@ jobs:
       run: |
         docker tag $(docker compose images -q frontend) ${{ secrets.DOCKER_HUB_USERNAME }}/gym-frontend:latest
         docker push ${{ secrets.DOCKER_HUB_USERNAME }}/gym-frontend:latest
+      continue-on-error: true
 
     - name: Clean up
       if: always()

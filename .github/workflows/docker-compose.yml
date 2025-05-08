@@ -10,6 +10,16 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: secret
+          MYSQL_DATABASE: gym_management
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping -h localhost -u root -psecret" --health-interval=10s --health-timeout=5s --health-retries=3
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
@@ -33,19 +43,38 @@ jobs:
         docker compose exec -T db mysqladmin ping -h localhost -u root -psecret --wait
         sleep 10 # Additional wait time for all services
 
+    - name: Install Composer dependencies
+      run: docker compose exec -T app composer install
+
+    - name: Generate Laravel application key
+      run: docker compose exec -T app php artisan key:generate
+
+    - name: Set storage permissions
+      run: |
+        docker compose exec -T app chmod -R 775 storage
+        docker compose exec -T app chown -R www-data:www-data storage
+
     - name: Run Laravel migrations
-      run: docker compose exec -T backend php artisan migrate --force
+      run: docker compose exec -T app php artisan migrate --force
 
-
+    - name: Run PHPUnit tests
+      run: docker compose exec -T app vendor/bin/phpunit
 
     - name: Verify services
       run: |
         # Verify backend is running
-        docker compose ps | grep backend | grep Up
-        # Verify frontend is running
-        docker compose ps | grep frontend | grep Up
+        docker compose ps | grep app | grep Up
+        # Verify webserver is running
+        docker compose ps | grep webserver | grep Up
         # Verify database is running
         docker compose ps | grep db | grep Up
+        # Verify PHPMyAdmin is running
+        docker compose ps | grep phpmyadmin | grep Up
+
+    - name: Check application health
+      run: |
+        curl -sSf http://localhost:8080 > /dev/null || (echo "Backend health check failed" && exit 1)
+        curl -sSf http://localhost:8081 > /dev/null || (echo "PHPMyAdmin health check failed" && exit 1)
 
     - name: Clean up
       if: always()

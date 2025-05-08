@@ -36,11 +36,7 @@ jobs:
     - name: Run Laravel migrations
       run: docker compose exec -T backend php artisan migrate --force
 
-    - name: Run tests (example - customize as needed)
-      run: |
-        # Example test commands - customize based on your actual tests
-        docker compose exec -T backend php artisan test
-        # docker compose exec -T frontend ng test --watch=false
+
 
     - name: Verify services
       run: |

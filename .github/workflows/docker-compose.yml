@@ -14,8 +14,10 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Set up Docker Buildx
+    - name: Set up Docker
+      uses: docker/setup-qemu-action@v2
       uses: docker/setup-buildx-action@v2
+      uses: docker/setup-compose-action@v2  # This installs docker-compose
 
     - name: Cache Docker layers
       uses: actions/cache@v3
@@ -26,31 +28,27 @@ jobs:
           ${{ runner.os }}-buildx-
 
     - name: Start Docker Compose
-      run: docker-compose up -d --build
+      run: docker compose up -d --build  # Note: 'docker compose' (without hyphen) is now preferred
 
     - name: Wait for services to be ready
       run: |
-        docker-compose exec -T db mysqladmin ping -h localhost -u root -psecret --wait
-        sleep 10 # Additional wait time for all services
+        docker compose exec -T db mysqladmin ping -h localhost -u root -psecret --wait
+        sleep 10
 
     - name: Run Laravel migrations
-      run: docker-compose exec -T backend php artisan migrate --force
+      run: docker compose exec -T backend php artisan migrate --force
 
-    - name: Run tests (example - customize as needed)
+    - name: Run tests
       run: |
-        # Example test commands - customize based on your actual tests
-        docker-compose exec -T backend php artisan test
-        # docker-compose exec -T frontend ng test --watch=false
+        docker compose exec -T backend php artisan test
+        # docker compose exec -T frontend ng test --watch=false
 
     - name: Verify services
       run: |
-        # Verify backend is running
-        docker-compose ps | grep backend | grep Up
-        # Verify frontend is running
-        docker-compose ps | grep frontend | grep Up
-        # Verify database is running
-        docker-compose ps | grep db | grep Up
+        docker compose ps | grep backend | grep Up
+        docker compose ps | grep frontend | grep Up
+        docker compose ps | grep db | grep Up
 
     - name: Clean up
       if: always()
-      run: docker-compose down -v
+      run: docker compose down -v

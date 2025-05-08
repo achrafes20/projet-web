@@ -1,0 +1,32 @@
+<nav class="navbar navbar-expand-lg bg-body-tertiary py-3" id="nav">
+  <div class="container-fluid">
+    <a class="navbar-brand ms-3" href="#">
+      <img [src]="imageurl" alt="Bootstrap" width="30" height="24">
+    </a>
+    <a class="navbar-brand mx-5 custom-fitness " href="#" id="fitness">Azhar Gym</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse ms-5" id="navbarSupportedContent" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item mx-3">
+          <a class="nav-link active fw-semibold" id="H" aria-current="page" [routerLink]="['/home']">Home</a>
+        </li>
+        <li class="nav-item mx-3">
+          <a class="nav-link fw-semibold" [routerLink]="['/plan']">Plans</a>
+        </li>
+        <li class="nav-item mx-3">
+          <a class="nav-link fw-semibold" [routerLink]="['/services']">Our Services</a>
+        </li>
+        <li class="nav-item mx-3">
+          <a class="nav-link fw-semibold" [routerLink]="['/contact']">Contact Us</a>
+        </li>
+
+
+        <app-dropdown></app-dropdown>
+      </ul>
+
+    </div>
+  </div>
+</nav>

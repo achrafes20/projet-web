@@ -1,0 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Open+Sans:ital,wght@1,300&family=Roboto+Mono:wght@300&family=Sometype+Mono:ital@1&display=swap');
+
+
+#main{
+    height: 100vh;
+    background-color: #93B1A6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+}
+.form{
+    height: 85vh;
+    width: 85%;
+    background-color: black;
+    box-shadow:  rgb(0, 0, 0) 0px 20px 30px -10px;
+    /* border: 2px solid wh; */
+    border-top-left-radius: 30px;
+    border-bottom-right-radius: 30px;
+}
+.col1{
+    border-top-left-radius: 30px;
+    height: 100%;
+    width: 35%;
+    background-color: #040D12;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+.col2{
+border-bottom-right-radius: 30px;
+    height: 100%;
+    width: 65%;
+    background-color: #183D3D;
+   
+}
+.row2,.row3,.row4{
+    height: 27%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+.row1{
+    height: 19%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+ svg,h2{
+    height: 80px;
+    color: #93B1A6;
+}
+
+h5{
+    color: #5C8374;
+
+font-family: 'Sometype Mono', monospace;
+}

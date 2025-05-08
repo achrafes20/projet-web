@@ -1,0 +1,10 @@
+<div class="dropdown" (click)="toggleDropdown()">
+    <button class="btn" type="button">
+      Gym Tour
+    </button>
+    <ul class="dropdown-menu" [ngClass]="{ 'show': isDropdownOpen }" (click)="preventClose($event)">
+      <li><a class="dropdown-item" [routerLink]="['/images']">Image Tour</a></li>
+      <li><a class="dropdown-item" [routerLink]="['/videos']">Video Tour</a></li>
+    </ul>
+  </div>
+  

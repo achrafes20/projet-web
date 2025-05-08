@@ -1,0 +1,35 @@
+.col1{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #5C8374;
+    padding: 50px;
+}
+
+.img{
+    position: relative;
+    height: 100px;
+    width: 650px;
+    border: 2px solid #93B1A6;
+    background-color: #183D3D;
+    transition: background-color 1.5s;
+}
+
+h3{
+    background-color: #040D12;
+    position: absolute;
+    color: #93B1A6;
+    font-size: 5rem;
+    text-align: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    height: 100px;
+    width: 650px;
+    top: 20px;
+    left: 20px;
+    border: 2px solid #93B1A6;
+}
+
+.img:hover{
+    background-color: #93B1A6;
+    transition: background-color 1.5s;
+}

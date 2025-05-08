@@ -1,0 +1,56 @@
+<!-- contact-form.component.html -->
+
+<div class="container">
+  <div class="row">
+    <h3>Send Us A Message</h3>
+    <h6>We will be in touch as soon as possible</h6>
+  </div>
+  <div class="row">
+    <form [formGroup]="contactForm" class="form-group" (ngSubmit)="onSubmit()">
+
+      <div class="form-group">
+        <input formControlName="firstName" class="form-control" placeholder="Enter First Name">
+        <p class="alert alert-danger" *ngIf="contactForm.get('firstName')?.hasError('minlength')">
+          Minimum length should be 3 characters.
+        </p>
+      </div>
+      <div class="form-group">
+        <input formControlName="lastName" class="form-control" placeholder="Enter Last Name">
+        <p class="alert alert-danger" *ngIf="contactForm.get('lastName')?.hasError('minlength')">
+          Minimum length should be 3 characters.
+        </p>
+      </div>
+      <div class="form-group">
+        <input formControlName="phone" class="form-control" placeholder="Enter Phone Number">
+        <p class="alert alert-danger" *ngIf="contactForm.get('phone')?.hasError('minlength')">
+          Minimum length should be 10 digits.
+        </p>
+      </div>
+      <div class="form-group">
+        <input formControlName="email" class="form-control" placeholder="Enter Email">
+        <p class="alert alert-danger" *ngIf="contactForm.get('email')?.hasError('minlength')">
+          Minimum length should be 10 characters.
+        </p>
+        <p class="alert alert-danger" *ngIf="contactForm.get('email')?.hasError('email')">
+          Please enter a valid email address.
+        </p>
+      </div>
+      <div class="form-group">
+        <textarea formControlName="query" class="form-control" placeholder="Enter Your Query"></textarea>
+        <p class="alert alert-danger" *ngIf="contactForm.get('query')?.hasError('minlength')">
+          Minimum length should be 6 characters.
+        </p>
+      </div>
+      <div class="form-group col">
+        <button [disabled]="contactForm.invalid" type="submit" id="liveToastBtn" class="btn btn-success">Submit</button>
+      </div>
+
+    </form>
+
+    <div *ngIf="showDiv" class="your-div-class alert alert-success">
+      <h1>Thank You, {{contactForm.get('firstName')?.value}}!</h1>
+      <p>We have received your query and will get back to you as soon as possible.</p>
+    </div>
+
+  </div>
+</div>

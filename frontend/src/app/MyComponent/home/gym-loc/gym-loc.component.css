@@ -1,0 +1,115 @@
+.main{
+    
+    
+    background-color: #183D3D;
+    height: 100vh;
+    width: 100%;
+}
+.col{
+    background-color: #183D3D;
+    transition: background-color 2s;
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+
+
+
+.row1,.row3{
+     width: 100%;
+     height: 20vh;
+     background-color: #183D3D;
+     
+}
+
+.row2{
+    height: 60vh;
+}
+
+.row1,.row2,.row3{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* flex-direction: column; */
+    /* border: 2px solid red; */
+}
+
+.head{
+    background-color: #040D12;
+    transition: background-color 2s;
+    position: relative;
+    border: 2px solid #93B1A6;
+    height: 110px;
+    width: 70%;
+}
+.head:hover{
+    background-color: #93B1A6;
+    transition: background-color 2s;
+}
+.head h2{
+    background-color: #5C8374;
+    font-family: 'Times New Roman', Times, serif;
+    text-align: center;
+    font-size: 5rem;
+    height: 110px;
+    width: 100%;
+    top: 20px;
+    color: #040D12;
+    left: 20px;
+    position: absolute;
+    border: 2px solid #93B1A6;
+}
+
+.img{
+    background-color: #040D12;
+    position: relative;
+    border: 2px solid #93B1A6;
+    transition: background-color 2s;
+    height: 480px;
+    width: 1050px;
+}
+.img:hover{
+    background-color: #93B1A6;
+    transition: background-color 2s;
+}
+.img img{
+    background-color: #5C8374;
+    font-family: 'Times New Roman', Times, serif;
+    text-align: center;
+    font-size: 5rem;
+    height: 480px;
+    width: 1050px;
+    top: 20px;
+    color: #040D12;
+    left: 20px;
+    position: absolute;
+    border: 2px solid #93B1A6;
+}
+.loc{
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    height: 80%;
+    width: 80%;
+    background-color: #5C8374;
+    border: 2px solid #040D12;
+}
+.loc img{
+    /* float: left; */
+    /* margin-left: 1%; */
+    border: 2px solid #040D12;
+    width: 23%;
+    height: 80%;
+}
+.loc h2{
+    color: #040D12;
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 2.5rem;
+    width: 70%;
+    padding-left: 1%;
+}
+

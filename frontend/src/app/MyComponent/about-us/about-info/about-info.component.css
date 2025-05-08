@@ -1,0 +1,27 @@
+.row{
+    background-color: #93B1A6;
+    height: 30vh;
+}
+.col{
+    width: 25%;
+    height: 100%;
+    display: flex;
+   
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+.col h1{
+    font-size: 5rem;
+}
+  
+
+.row .col:hover {
+    background-color:#040D12;
+    transition: background-color 2s;
+    color: #93B1A6;
+  }
+  
+  .row .col:not(:hover) {
+    background-color: #93B1A6;
+  }

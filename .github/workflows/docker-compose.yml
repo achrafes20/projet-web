@@ -39,17 +39,17 @@ jobs:
     - name: Run tests (example - customize as needed)
       run: |
         # Example test commands - customize based on your actual tests
-        docker-compose exec -T backend php artisan test
-        # docker-compose exec -T frontend ng test --watch=false
+        docker compose exec -T backend php artisan test
+        # docker compose exec -T frontend ng test --watch=false
 
     - name: Verify services
       run: |
         # Verify backend is running
-        docker-compose ps | grep backend | grep Up
+        docker compose ps | grep backend | grep Up
         # Verify frontend is running
-        docker-compose ps | grep frontend | grep Up
+        docker compose ps | grep frontend | grep Up
         # Verify database is running
-        docker-compose ps | grep db | grep Up
+        docker compose ps | grep db | grep Up
 
     - name: Clean up
       if: always()

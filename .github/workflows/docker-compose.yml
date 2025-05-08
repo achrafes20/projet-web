@@ -153,7 +153,7 @@ jobs:
         username: ${{ secrets.FREEHOSTIA_FTP_USER }}
         password: ${{ secrets.FREEHOSTIA_FTP_PASSWORD }}
         local-dir: ./backend/
-        server-dir: ./htdocs/
+        server-dir: ./gym-management.com/
         exclude: |
           .git*
           .env.example

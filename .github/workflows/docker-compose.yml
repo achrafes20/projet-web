@@ -1,4 +1,4 @@
-name: Docker Compose Build and Test
+name: Docker Compose Build, Test and Push
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build-and-test:
+  build-test-push:
     runs-on: ubuntu-latest
     
     steps:
@@ -25,6 +25,13 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-buildx-
 
+    - name: Login to Docker Hub
+      if: github.event_name == 'push'
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
     - name: Start Docker Compose
       run: docker compose up -d --build
 
@@ -36,9 +43,8 @@ jobs:
     - name: Run Laravel migrations
       run: docker compose exec -T backend php artisan migrate --force
 
-
-
     - name: Verify services
+      id: verify-services
       run: |
         # Verify backend is running
         docker compose ps | grep backend | grep Up
@@ -46,6 +52,43 @@ jobs:
         docker compose ps | grep frontend | grep Up
         # Verify database is running
         docker compose ps | grep db | grep Up
+        echo "services_ready=true" >> $GITHUB_OUTPUT
+
+    - name: Check for Dockerfile changes
+      id: dockerfile-changes
+      run: |
+        changed_files=$(git diff --name-only HEAD^ HEAD)
+        backend_changed=false
+        frontend_changed=false
+        
+        if [[ "$changed_files" =~ "backend/Dockerfile" ]]; then
+          backend_changed=true
+        fi
+        
+        if [[ "$changed_files" =~ "frontend/Dockerfile" ]]; then
+          frontend_changed=true
+        fi
+        
+        echo "backend_changed=$backend_changed" >> $GITHUB_OUTPUT
+        echo "frontend_changed=$frontend_changed" >> $GITHUB_OUTPUT
+
+    - name: Push Backend Image
+      if: |
+        github.event_name == 'push' &&
+        steps.verify-services.outputs.services_ready == 'true' &&
+        steps.dockerfile-changes.outputs.backend_changed == 'true'
+      run: |
+        docker tag $(docker compose images -q backend) ${{ secrets.DOCKER_HUB_USERNAME }}/gym-backend:latest
+        docker push ${{ secrets.DOCKER_HUB_USERNAME }}/gym-backend:latest
+
+    - name: Push Frontend Image
+      if: |
+        github.event_name == 'push' &&
+        steps.verify-services.outputs.services_ready == 'true' &&
+        steps.dockerfile-changes.outputs.frontend_changed == 'true'
+      run: |
+        docker tag $(docker compose images -q frontend) ${{ secrets.DOCKER_HUB_USERNAME }}/gym-frontend:latest
+        docker push ${{ secrets.DOCKER_HUB_USERNAME }}/gym-frontend:latest
 
     - name: Clean up
       if: always()

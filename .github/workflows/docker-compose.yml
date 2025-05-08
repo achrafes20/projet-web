@@ -30,7 +30,7 @@ jobs:
 
     - name: Wait for services to be ready
       run: |
-        docker-compose exec -T db mysqladmin ping -h localhost -u root -psecret --wait
+        docker compose exec -T db mysqladmin ping -h localhost -u root -psecret --wait
         sleep 10 # Additional wait time for all services
 
     - name: Run Laravel migrations

@@ -11,34 +11,22 @@ class Member extends Model
 
     protected $fillable = [
         'name', 'email', 'phone', 'join_date', 'birth_date', 
-        'gender', 'address', 'emergency_contact', 'photo', 'status'
+        'gender', 'address', 'emergency_contact', 'health_notes', 
+        'profile_image', 'membership_id'
     ];
 
-    // Add this to automatically convert dates to Carbon instances
-    protected $casts = [
-        'join_date' => 'date:Y-m-d', // or 'datetime' if it includes time
-        'birth_date' => 'date:Y-m-d', // or 'datetime'
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-    ];
-
-    public function memberships()
+    public function membership()
     {
-        return $this->hasMany(Membership::class);
+        return $this->belongsTo(Membership::class);
     }
 
-    public function attendances()
+    public function workouts()
     {
-        return $this->hasMany(Attendance::class);
+        return $this->hasMany(Workout::class);
     }
 
     public function payments()
     {
         return $this->hasMany(Payment::class);
-    }
-
-    public function workoutPlans()
-    {
-        return $this->hasMany(WorkoutPlan::class);
     }
 }

@@ -1,56 +1,59 @@
 @extends('layouts.app')
 
+@section('title', 'Edit Membership')
+
 @section('content')
-<div class="card">
-    <div class="card-header">
-        <h5>Edit Membership</h5>
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1>Edit Membership: {{ $membership->name }}</h1>
+        </div>
+        <div class="col-auto">
+            <a href="{{ route('memberships.index') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Memberships
+            </a>
+        </div>
     </div>
-    <div class="card-body">
-        <form action="{{ route('memberships.update', $membership->id) }}" method="POST">
-            @csrf
-            @method('PUT')
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label for="member_id" class="form-label">Member</label>
-                        <select class="form-select" id="member_id" name="member_id" required>
-                            @foreach($members as $member)
-                                <option value="{{ $member->id }}" {{ $membership->member_id == $member->id ? 'selected' : '' }}>{{ $member->name }}</option>
-                            @endforeach
-                        </select>
+
+    <div class="card">
+        <div class="card-body">
+            <form action="{{ route('memberships.update', $membership->id) }}" method="POST">
+                @csrf
+                @method('PUT')
+                
+                <div class="mb-3">
+                    <label for="name" class="form-label">Name</label>
+                    <input type="text" class="form-control" id="name" name="name" value="{{ $membership->name }}" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="3" required>{{ $membership->description }}</textarea>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="price" class="form-label">Price</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" step="0.01" class="form-control" id="price" name="price" value="{{ $membership->price }}" required>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="membership_type" class="form-label">Membership Type</label>
-                        <select class="form-select" id="membership_type" name="membership_type" required>
-                            <option value="basic" {{ $membership->membership_type == 'basic' ? 'selected' : '' }}>Basic</option>
-                            <option value="premium" {{ $membership->membership_type == 'premium' ? 'selected' : '' }}>Premium</option>
-                            <option value="gold" {{ $membership->membership_type == 'gold' ? 'selected' : '' }}>Gold</option>
-                            <option value="platinum" {{ $membership->membership_type == 'platinum' ? 'selected' : '' }}>Platinum</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="start_date" class="form-label">Start Date</label>
-                        <input type="date" class="form-control" id="start_date" name="start_date" value="{{ $membership->start_date }}" required>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="duration_days" class="form-label">Duration (days)</label>
+                            <input type="number" class="form-control" id="duration_days" name="duration_days" value="{{ $membership->duration_days }}" required>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label for="end_date" class="form-label">End Date</label>
-                        <input type="date" class="form-control" id="end_date" name="end_date" value="{{ $membership->end_date }}" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="amount" class="form-label">Amount</label>
-                        <input type="number" step="0.01" class="form-control" id="amount" name="amount" value="{{ $membership->amount }}" required>
-                    </div>
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="status" name="status" {{ $membership->status ? 'checked' : '' }}>
-                        <label class="form-check-label" for="status">Active</label>
-                    </div>
+                
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">Update Membership</button>
                 </div>
-            </div>
-            <button type="submit" class="btn btn-primary">Update</button>
-            <a href="{{ route('memberships.index') }}" class="btn btn-secondary">Cancel</a>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
 @endsection

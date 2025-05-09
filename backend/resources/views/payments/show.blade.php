@@ -1,51 +1,83 @@
 @extends('layouts.app')
 
+@section('title', 'Payment Details')
+
 @section('content')
-<div class="card">
-    <div class="card-header">
-        <h5>Payment Details</h5>
-    </div>
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-6">
-                <h6>Member</h6>
-                <p>{{ $payment->member->name }}</p>
-                
-                <h6>Membership</h6>
-                <p>{{ $payment->membership->membership_type }}</p>
-                
-                <h6>Amount</h6>
-                <p>${{ number_format($payment->amount, 2) }}</p>
-            </div>
-            <div class="col-md-6">
-                <h6>Payment Date</h6>
-                <p>{{ $payment->payment_date->format('M d, Y') }}</p>
-                
-                <h6>Payment Method</h6>
-                <p>{{ ucfirst($payment->payment_method) }}</p>
-                
-                @if($payment->transaction_id)
-                    <h6>Transaction ID</h6>
-                    <p>{{ $payment->transaction_id }}</p>
-                @endif
-            </div>
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1>Payment Details</h1>
         </div>
-        @if($payment->notes)
-            <div class="row mt-3">
-                <div class="col-12">
-                    <h6>Notes</h6>
-                    <p>{{ $payment->notes }}</p>
+        <div class="col-auto">
+            <a href="{{ route('payments.index') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Payments
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Payment Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Payment Date:</strong> {{ \Carbon\Carbon::parse($payment->payment_date)->format('M d, Y') }}</p>
+                    <p><strong>Amount:</strong> ${{ number_format($payment->amount, 2) }}</p>
+                   <p><strong>Due Date:</strong> {{ \Carbon\Carbon::parse($payment->due_date)->format('M d, Y') }}</p>
+                    <p><strong>Payment Method:</strong> {{ ucfirst(str_replace('_', ' ', $payment->payment_method)) }}</p>
+                    <p><strong>Status:</strong> 
+                        @if($payment->status == 'paid')
+                            <span class="badge bg-success">Paid</span>
+                        @else
+                            <span class="badge bg-danger">Pending</span>
+                        @endif
+                    </p>
+                    
+                    @if($payment->notes)
+                        <p><strong>Notes:</strong></p>
+                        <p>{{ $payment->notes }}</p>
+                    @endif
                 </div>
             </div>
-        @endif
-        <div class="d-flex justify-content-end mt-3">
-            <a href="{{ route('payments.edit', $payment->id) }}" class="btn btn-warning me-2">Edit</a>
-            <form action="{{ route('payments.destroy', $payment->id) }}" method="POST">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
-            </form>
         </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Member Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Name:</strong> <a href="{{ route('members.show', $payment->member_id) }}">{{ $payment->member->name }}</a></p>
+                    <p><strong>Email:</strong> {{ $payment->member->email }}</p>
+                    <p><strong>Phone:</strong> {{ $payment->member->phone }}</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5>Membership Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Plan:</strong> {{ $payment->membership->name }}</p>
+                    <p><strong>Description:</strong> {{ $payment->membership->description }}</p>
+                    <p><strong>Duration:</strong> {{ $payment->membership->duration_days }} days</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="d-flex justify-content-end gap-2 mt-3">
+        <a href="{{ route('payments.edit', $payment->id) }}" class="btn btn-warning">
+            <i class="bi bi-pencil"></i> Edit
+        </a>
+        <form action="{{ route('payments.destroy', $payment->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this payment record?')">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="btn btn-danger">
+                <i class="bi bi-trash"></i> Delete
+            </button>
+        </form>
     </div>
 </div>
 @endsection

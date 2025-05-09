@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Payment;
 use App\Models\Member;
 use App\Models\Membership;
-use App\Models\Payment;
 use Illuminate\Http\Request;
 
 class PaymentController extends Controller
@@ -29,6 +29,7 @@ class PaymentController extends Controller
             'membership_id' => 'required|exists:memberships,id',
             'amount' => 'required|numeric',
             'payment_date' => 'required|date',
+            'due_date' => 'required|date|after:payment_date',
             'payment_method' => 'required',
         ]);
 
@@ -56,6 +57,7 @@ class PaymentController extends Controller
             'membership_id' => 'required|exists:memberships,id',
             'amount' => 'required|numeric',
             'payment_date' => 'required|date',
+            'due_date' => 'required|date|after:payment_date',
             'payment_method' => 'required',
         ]);
 

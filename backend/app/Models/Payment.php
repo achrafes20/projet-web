@@ -11,7 +11,8 @@ class Payment extends Model
 
     protected $fillable = [
         'member_id', 'membership_id', 'amount', 
-        'payment_date', 'payment_method', 'transaction_id', 'notes'
+        'payment_date', 'due_date', 'payment_method', 
+        'status', 'notes'
     ];
 
     public function member()
@@ -23,7 +24,4 @@ class Payment extends Model
     {
         return $this->belongsTo(Membership::class);
     }
-    protected $casts = [
-        'payment_date' => 'date',  
-    ];
 }

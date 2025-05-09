@@ -9,25 +9,10 @@ class Membership extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'member_id', 'membership_type', 'start_date', 
-        'end_date', 'amount', 'status'
-    ];
+    protected $fillable = ['name', 'description', 'price', 'duration_days'];
 
-    protected $casts = [
-        'status' => 'boolean',
-        'start_date' => 'date',  // Add this line
-        'end_date' => 'date',    // Add this line
-    ];
-
-    public function member()
+    public function members()
     {
-        return $this->belongsTo(Member::class);
+        return $this->hasMany(Member::class);
     }
-
-    public function payments()
-    {
-        return $this->hasMany(Payment::class);
-    }
-    
 }

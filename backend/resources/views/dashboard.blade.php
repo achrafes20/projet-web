@@ -1,99 +1,106 @@
 @extends('layouts.app')
 
-@section('content')
-<div class="row">
-    <div class="col-md-3">
-        <div class="card text-white bg-primary mb-3">
-            <div class="card-body">
-                <h5 class="card-title">Total Members</h5>
-                <p class="card-text display-4">{{ $totalMembers }}</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-success mb-3">
-            <div class="card-body">
-                <h5 class="card-title">Active Members</h5>
-                <p class="card-text display-4">{{ $activeMembers }}</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-info mb-3">
-            <div class="card-body">
-                <h5 class="card-title">Today's Attendance</h5>
-                <p class="card-text display-4">{{ $todayAttendances }}</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-warning mb-3">
-            <div class="card-body">
-                <h5 class="card-title">Monthly Revenue</h5>
-                <p class="card-text display-4">${{ number_format($monthlyRevenue, 2) }}</p>
-            </div>
-        </div>
-    </div>
-</div>
+@section('title', 'Dashboard')
 
-<div class="row mt-4">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5>Recent Members</h5>
+@section('content')
+<div class="container-fluid">
+    <h1 class="mb-4">Dashboard</h1>
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Members</h5>
+                    <h2 class="card-text">{{ $totalMembers }}</h2>
+                </div>
             </div>
-            <div class="card-body">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Join Date</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($recentMembers as $member)
-                        <tr>
-                            <td>{{ $member->name }}</td>
-                            <td>{{ $member->join_date ? \Carbon\Carbon::parse($member->join_date)->format('Y-m-d') : 'N/A' }}</td>
-                            <td>
-                                @if($member->status)
-                                    <span class="badge bg-success">Active</span>
-                                @else
-                                    <span class="badge bg-danger">Inactive</span>
-                                @endif
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Revenue</h5>
+                    <h2 class="card-text">${{ number_format($totalPayments, 2) }}</h2>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5>Recent Payments</h5>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Upcoming Workouts</h5>
+                </div>
+                <div class="card-body">
+                    @if($upcomingWorkouts->count() > 0)
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Member</th>
+                                        <th>Trainer</th>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($upcomingWorkouts as $workout)
+                                    <tr>
+                                        <td>{{ $workout->member->name }}</td>
+                                        <td>{{ $workout->trainer->name }}</td>
+                                        <td>{{ $workout->date->format('M d, Y') }}</td>
+                                        <td>{{ $workout->start_time }} - {{ $workout->end_time }}</td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <p>No upcoming workouts scheduled.</p>
+                    @endif
+                </div>
             </div>
-            <div class="card-body">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Member</th>
-                            <th>Amount</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($recentPayments as $payment)
-                        <tr>
-                            <td>{{ $payment->member->name }}</td>
-                            <td>${{ number_format($payment->amount, 2) }}</td>
-                            <td>{{ $payment->payment_date ? \Carbon\Carbon::parse($payment->payment_date)->format('Y-m-d') : 'N/A' }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Equipment Maintenance</h5>
+                </div>
+                <div class="card-body">
+                    @if($equipment->count() > 0)
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Condition</th>
+                                        <th>Last Maintenance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($equipment as $item)
+                                    <tr>
+                                        <td>{{ $item->name }}</td>
+                                        <td>
+                                            @if($item->condition == 'good')
+                                                <span class="badge bg-success">Good</span>
+                                            @elseif($item->condition == 'needs_maintenance')
+                                                <span class="badge bg-warning">Needs Maintenance</span>
+                                            @else
+                                                <span class="badge bg-danger">Needs Replacement</span>
+                                            @endif
+                                        </td>
+                                        <td>{{ $item->last_maintenance ? $item->last_maintenance->format('M d, Y') : 'Never' }}</td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <p>All equipment is in good condition.</p>
+                    @endif
+                </div>
             </div>
         </div>
     </div>

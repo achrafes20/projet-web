@@ -1,4 +1,4 @@
-name: Docker Compose Build, Test and Deploy
+name: Docker Compose Build, Test, Deploy
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build-test-push:
+  build-test-push-deploy:
     runs-on: ubuntu-latest
     
     steps:
@@ -97,6 +97,32 @@ jobs:
         docker tag $(docker compose images -q frontend) ${{ secrets.DOCKER_HUB_USERNAME }}/gym-frontend:latest
         docker push ${{ secrets.DOCKER_HUB_USERNAME }}/gym-frontend:latest
 
+    - name: Prepare backend files for deployment
+      if: github.event_name == 'push'
+      run: |
+        mkdir -p deploy-backend
+        # Copier tous les fichiers sauf .env, vendor et public
+        rsync -av --progress backend/ deploy-backend/ \
+          --exclude=.env \
+          --exclude=vendor/ \
+          --exclude=public/ \
+          --exclude=storage/
+        echo "Backend files prepared for deployment"
+
+    - name: Deploy to InfinityFree
+      if: github.event_name == 'push'
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.INFINITYFREE_HOST }}
+        username: ${{ secrets.INFINITYFREE_USERNAME }}
+        password: ${{ secrets.INFINITYFREE_PASSWORD }}
+        port: ${{ secrets.INFINITYFREE_PORT || 22 }}
+        source: "deploy-backend/"
+        target: ${{ secrets.INFINITYFREE_DEPLOY_PATH }}
+        strip_components: 1
+
     - name: Clean up
       if: always()
-      run: docker compose down -v
+      run: |
+        docker compose down -v
+        rm -rf deploy-backend

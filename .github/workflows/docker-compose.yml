@@ -1,4 +1,4 @@
-name: Docker Compose Build, Test and Push
+name: Docker Compose Build, Test, Push and Deploy
 
 on:
   push:
@@ -7,14 +7,15 @@ on:
     branches: [ main ]
 
 jobs:
-  build-test-push:
+  build-test-push-deploy:
     runs-on: ubuntu-latest
     
     steps:
+    # --- Étapes Docker ---
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        fetch-depth: 2  # Nécessaire pour git diff HEAD^ HEAD
+        fetch-depth: 2
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
@@ -37,10 +38,10 @@ jobs:
     - name: Start Docker Compose
       run: docker compose up -d --build
 
-    - name: Wait for services to be ready
+    - name: Wait for services
       run: |
         docker compose exec -T db mysqladmin ping -h localhost -u root -psecret --wait
-        sleep 10 # Additional wait time for all services
+        sleep 10
 
     - name: Run Laravel migrations
       run: docker compose exec -T backend php artisan migrate --force
@@ -48,34 +49,23 @@ jobs:
     - name: Verify services
       id: verify-services
       run: |
-        # Verify backend is running
-        docker compose ps | grep backend | grep Up || echo "Backend service check failed"
-        # Verify frontend is running
-        docker compose ps | grep frontend | grep Up || echo "Frontend service check failed"
-        # Verify database is running
-        docker compose ps | grep db | grep Up || echo "Database service check failed"
+        docker compose ps | grep backend | grep Up || echo "Backend check failed"
+        docker compose ps | grep frontend | grep Up || echo "Frontend check failed"
+        docker compose ps | grep db | grep Up || echo "Database check failed"
         echo "services_ready=true" >> $GITHUB_OUTPUT
 
-    - name: Check for Dockerfile changes
+    - name: Check Dockerfile changes
       id: dockerfile-changes
       run: |
         changed_files=$(git diff --name-only HEAD^ HEAD || echo "")
         backend_changed=false
         frontend_changed=false
         
-        if [[ "$changed_files" =~ "backend/Dockerfile" ]]; then
-          echo "Backend Dockerfile changed"
-          backend_changed=true
-        fi
-        
-        if [[ "$changed_files" =~ "frontend/Dockerfile" ]]; then
-          echo "Frontend Dockerfile changed"
-          frontend_changed=true
-        fi
+        [[ "$changed_files" =~ "backend/Dockerfile" ]] && backend_changed=true
+        [[ "$changed_files" =~ "frontend/Dockerfile" ]] && frontend_changed=true
         
         echo "backend_changed=$backend_changed" >> $GITHUB_OUTPUT
         echo "frontend_changed=$frontend_changed" >> $GITHUB_OUTPUT
-        echo "No Dockerfile changes detected" >> $GITHUB_STEP_SUMMARY
 
     - name: Push Backend Image
       if: |
@@ -97,6 +87,49 @@ jobs:
         docker push ${{ secrets.DOCKER_HUB_USERNAME }}/gym-frontend:latest
       continue-on-error: true
 
+    # --- Déploiement InfinityFree ---
+    - name: Prepare backend files
+      if: github.event_name == 'push'
+      run: |
+        mkdir -p deploy-htdocs
+        rsync -av --progress backend/ deploy-htdocs/ \
+          --exclude=vendor/ \
+          --exclude=public/ \
+          --exclude=.env \
+          --exclude=storage/logs/ \
+          --exclude=.gitignore
+        tar -czvf htdocs-deploy.tar.gz -C deploy-htdocs .
+
+    - name: Upload to InfinityFree
+      if: github.event_name == 'push'
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.INFINITYFREE_HOST }}
+        username: ${{ secrets.INFINITYFREE_USERNAME }}
+        password: ${{ secrets.INFINITYFREE_PASSWORD }}
+        port: ${{ secrets.INFINITYFREE_PORT || 22 }}
+        source: "htdocs-deploy.tar.gz"
+        target: "/home/${{ secrets.INFINITYFREE_USERNAME }}/htdocs/"
+
+    - name: Extract and configure on server
+      if: github.event_name == 'push'
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.INFINITYFREE_HOST }}
+        username: ${{ secrets.INFINITYFREE_USERNAME }}
+        password: ${{ secrets.INFINITYFREE_PASSWORD }}
+        port: ${{ secrets.INFINITYFREE_PORT || 22 }}
+        script: |
+          cd ~/htdocs
+          tar -xzvf htdocs-deploy.tar.gz --strip-components=1
+          rm htdocs-deploy.tar.gz
+          mkdir -p storage/logs
+          chmod -R 755 storage bootstrap/cache
+          echo "Laravel files deployed to htdocs!"
+
+    # --- Nettoyage ---
     - name: Clean up
       if: always()
-      run: docker compose down -v
+      run: |
+        docker compose down -v
+        rm -rf deploy-htdocs htdocs-deploy.tar.gz

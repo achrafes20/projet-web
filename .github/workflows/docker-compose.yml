@@ -1,4 +1,4 @@
-name: Docker Compose Build, Test and Push
+name: Docker Compose Build, Test, Push and Deploy
 
 on:
   push:
@@ -97,6 +97,51 @@ jobs:
         docker push ${{ secrets.DOCKER_HUB_USERNAME }}/gym-frontend:latest
       continue-on-error: true
 
+     - name: Prepare backend files for InfinityFree
+      if: github.event_name == 'push'
+      run: |
+        mkdir -p deploy-htdocs
+        # Copier uniquement les fichiers nécessaires (exclure vendor/, public/, .env)
+        rsync -av --progress backend/ deploy-htdocs/ \
+          --exclude=vendor/ \
+          --exclude=public/ \
+          --exclude=.env \
+          --exclude=storage/logs/ \
+          --exclude=.gitignore
+        
+        # Créer une archive
+        tar -czvf htdocs-deploy.tar.gz -C deploy-htdocs .
+
+    - name: Deploy to InfinityFree (htdocs root)
+      if: github.event_name == 'push'
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.INFINITYFREE_HOST }}
+        username: ${{ secrets.INFINITYFREE_USERNAME }}
+        password: ${{ secrets.INFINITYFREE_PASSWORD }}
+        port: ${{ secrets.INFINITYFREE_PORT || 22 }}
+        source: "htdocs-deploy.tar.gz"
+        target: "/home/${{ secrets.INFINITYFREE_USERNAME }}/htdocs/"
+
+    - name: Extract files on server (via SSH)
+      if: github.event_name == 'push'
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.INFINITYFREE_HOST }}
+        username: ${{ secrets.INFINITYFREE_USERNAME }}
+        password: ${{ secrets.INFINITYFREE_PASSWORD }}
+        port: ${{ secrets.INFINITYFREE_PORT || 22 }}
+        script: |
+          cd ~/htdocs
+          tar -xzvf htdocs-deploy.tar.gz --strip-components=1
+          rm htdocs-deploy.tar.gz
+          # Si nécessaire, recréer le dossier storage/logs
+          mkdir -p storage/logs
+          chmod -R 755 storage
+          echo "Déploiement terminé !"
+
     - name: Clean up
       if: always()
-      run: docker compose down -v
+      run: |
+        docker compose down -v
+        rm -rf deploy-htdocs htdocs-deploy.tar.gz

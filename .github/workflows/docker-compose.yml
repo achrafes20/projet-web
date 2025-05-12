@@ -89,16 +89,26 @@ jobs:
 
     # --- Déploiement InfinityFree ---
     # --- Déploiement InfinityFree via FTP ---
+    # --- Déploiement InfinityFree via FTP ---
+    # --- Déploiement InfinityFree via FTP ---
     - name: Prepare backend files
       if: github.event_name == 'push'
       run: |
         mkdir -p deploy-htdocs
         rsync -av --progress backend/ deploy-htdocs/ \
           --exclude=vendor/ \
-          --exclude=public/ \
+          --exclude=node_modules/ \
           --exclude=.env \
           --exclude=storage/logs/ \
-          --exclude=.gitignore
+          --exclude=.gitignore \
+          --exclude=storage/framework/ \
+          --exclude=public/storage
+        
+        # Créer les dossiers nécessaires
+        mkdir -p deploy-htdocs/storage/{logs,framework/{cache,sessions,views},app/public}
+        mkdir -p deploy-htdocs/bootstrap/cache
+        touch deploy-htdocs/storage/logs/laravel.log
+        chmod -R 755 deploy-htdocs/storage deploy-htdocs/bootstrap/cache
 
     - name: Upload to InfinityFree via FTP
       if: github.event_name == 'push'
@@ -110,7 +120,12 @@ jobs:
         port: ${{ secrets.INFINITYFREE_FTP_PORT || 21 }}
         local-dir: ./deploy-htdocs/
         server-dir: ./htdocs/
-        dangerous-clean-slate: true
+        exclude: |
+          .env
+          .gitignore
+        security: passive
+        dry-run: false
+        git-ftp-args: --insecure
 
     # --- Nettoyage ---
     - name: Clean up

@@ -73,8 +73,8 @@ jobs:
         steps.verify-services.outputs.services_ready == 'true' &&
         steps.dockerfile-changes.outputs.backend_changed == 'true'
       run: |
-        docker tag $(docker compose images -q backend) ${{ secrets.DOCKER_HUB_USERNAME }}/gym-backend:latest
-        docker push ${{ secrets.DOCKER_HUB_USERNAME }}/gym-backend:latest
+        docker tag $(docker compose images -q backend) ${{ secrets.DOCKER_HUB_USERNAME }}/backend-web:latest
+        docker push ${{ secrets.DOCKER_HUB_USERNAME }}/backend-web:latest
       continue-on-error: true
 
     - name: Push Frontend Image
@@ -83,8 +83,8 @@ jobs:
         steps.verify-services.outputs.services_ready == 'true' &&
         steps.dockerfile-changes.outputs.frontend_changed == 'true'
       run: |
-        docker tag $(docker compose images -q frontend) ${{ secrets.DOCKER_HUB_USERNAME }}/gym-frontend:latest
-        docker push ${{ secrets.DOCKER_HUB_USERNAME }}/gym-frontend:latest
+        docker tag $(docker compose images -q frontend) ${{ secrets.DOCKER_HUB_USERNAME }}/frontend-web:latest
+        docker push ${{ secrets.DOCKER_HUB_USERNAME }}/frontend-web:latest
       continue-on-error: true
 
     # --- Déploiement InfinityFree ---

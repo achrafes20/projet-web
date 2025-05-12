@@ -88,6 +88,7 @@ jobs:
       continue-on-error: true
 
     # --- Déploiement InfinityFree ---
+    # --- Déploiement InfinityFree via FTP ---
     - name: Prepare backend files
       if: github.event_name == 'push'
       run: |
@@ -98,38 +99,22 @@ jobs:
           --exclude=.env \
           --exclude=storage/logs/ \
           --exclude=.gitignore
-        tar -czvf htdocs-deploy.tar.gz -C deploy-htdocs .
 
-    - name: Upload to InfinityFree
+    - name: Upload to InfinityFree via FTP
       if: github.event_name == 'push'
-      uses: appleboy/scp-action@master
+      uses: SamKirkland/FTP-Deploy-Action@4.3.0
       with:
-        host: ${{ secrets.INFINITYFREE_HOST }}
+        server: ${{ secrets.INFINITYFREE_HOST }}
         username: ${{ secrets.INFINITYFREE_USERNAME }}
         password: ${{ secrets.INFINITYFREE_PASSWORD }}
-        port: ${{ secrets.INFINITYFREE_PORT || 22 }}
-        source: "htdocs-deploy.tar.gz"
-        target: "/home/${{ secrets.INFINITYFREE_USERNAME }}/htdocs/"
-
-    - name: Extract and configure on server
-      if: github.event_name == 'push'
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.INFINITYFREE_HOST }}
-        username: ${{ secrets.INFINITYFREE_USERNAME }}
-        password: ${{ secrets.INFINITYFREE_PASSWORD }}
-        port: ${{ secrets.INFINITYFREE_PORT || 22 }}
-        script: |
-          cd ~/htdocs
-          tar -xzvf htdocs-deploy.tar.gz --strip-components=1
-          rm htdocs-deploy.tar.gz
-          mkdir -p storage/logs
-          chmod -R 755 storage bootstrap/cache
-          echo "Laravel files deployed to htdocs!"
+        port: ${{ secrets.INFINITYFREE_FTP_PORT || 21 }}
+        local-dir: ./deploy-htdocs/
+        server-dir: ./htdocs/
+        dangerous-clean-slate: true
 
     # --- Nettoyage ---
     - name: Clean up
       if: always()
       run: |
         docker compose down -v
-        rm -rf deploy-htdocs htdocs-deploy.tar.gz
+        rm -rf deploy-htdocs

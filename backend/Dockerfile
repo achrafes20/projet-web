@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libxml2-dev
 
-# Clear cache
+# Clear cacheee
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions

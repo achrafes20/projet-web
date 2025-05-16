@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    # --- Étapes Docker ---
+    # --- Étapes Docker -------
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
@@ -87,7 +87,7 @@ jobs:
         docker push ${{ secrets.DOCKER_HUB_USERNAME }}/frontend-web:latest
       continue-on-error: true
 
-    # --- Déploiement InfinityFree ---
+    # --- Déploiement InfinityFree -----------
     # --- Déploiement InfinityFree via FTP ---
     # --- Déploiement InfinityFree via FTP ---
     # --- Déploiement InfinityFree via FTP ---
